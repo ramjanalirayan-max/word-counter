@@ -1,0 +1,13 @@
+[
+  {
+    "id": "usr_q2zsjiz9mu19fyrd",
+    "email": "testuser@vercel.com",
+    "name": "Vercel Tester",
+    "password": "mypassword123",
+    "provider": "email",
+    "createdAt": "2026-09-14T13:10:07.801Z",
+    "lastVisitAt": "2026-09-14T13:10:07.801Z",
+    "visitCount": 1,
+    "lastIp": "127.0.0.1"
+  }
+]
