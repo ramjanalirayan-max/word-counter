@@ -1,8 +1,8 @@
 import express from 'express';
 import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
-import { authStore, ADMIN_CONFIG } from '../server/authStore';
-import { contactStore } from '../server/contactStore';
+import { authStore, ADMIN_CONFIG } from '../server/authStore.js';
+import { contactStore } from '../server/contactStore.js';
 
 dotenv.config();
 

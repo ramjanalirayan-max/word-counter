@@ -7,5 +7,16 @@
       "source": "/api/(.*)",
       "destination": "/api/index.ts"
     }
-  ]
+  ],
+  "functions": {
+    "api/**/*.js": {
+      "includeFiles": "server/**"
+    },
+    "api/**/*.ts": {
+      "includeFiles": "server/**"
+    },
+    "api/index.ts": {
+      "includeFiles": "server/**"
+    }
+  }
 }
