@@ -1,7 +1,7 @@
 import express from 'express';
 import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
-import { authStore, ADMIN_CONFIG } from './_lib/authStore.js';
+import { authStore, ADMIN_CONFIG, getSupabaseUsers } from './_lib/authStore.js';
 import { contactStore } from './_lib/contactStore.js';
 
 dotenv.config();
@@ -129,7 +129,7 @@ router.post('/synthesize', handleTts);
 // ----------------- Authentication Endpoints -----------------
 
 // Register with Email & Password
-router.post('/auth/register', (req, res) => {
+router.post('/auth/register', async (req, res) => {
   try {
     const body = parseBody(req);
     const { email, password, name } = body;
@@ -140,7 +140,7 @@ router.post('/auth/register', (req, res) => {
       return res.status(400).json({ error: 'Password must be at least 4 characters long.' });
     }
     const ip = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress;
-    const user = authStore.registerEmailUser(email, password, name, ip);
+    const user = await authStore.registerEmailUser(email, password, name, ip);
     return res.json({ success: true, user });
   } catch (err: any) {
     return res.status(400).json({ error: err.message || 'Registration failed.' });
@@ -148,7 +148,7 @@ router.post('/auth/register', (req, res) => {
 });
 
 // Login with Email & Password
-router.post('/auth/login', (req, res) => {
+router.post('/auth/login', async (req, res) => {
   try {
     const body = parseBody(req);
     const { email, password } = body;
@@ -156,7 +156,7 @@ router.post('/auth/login', (req, res) => {
       return res.status(400).json({ error: 'Email and password are required.' });
     }
     const ip = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress;
-    const user = authStore.loginEmailUser(email, password, ip);
+    const user = await authStore.loginEmailUser(email, password, ip);
     return res.json({ success: true, user });
   } catch (err: any) {
     return res.status(400).json({ error: err.message || 'Login failed.' });
@@ -164,7 +164,7 @@ router.post('/auth/login', (req, res) => {
 });
 
 // Google / Gmail one-click login
-router.post('/auth/google', (req, res) => {
+router.post('/auth/google', async (req, res) => {
   try {
     const body = parseBody(req);
     const { email, name } = body;
@@ -172,7 +172,7 @@ router.post('/auth/google', (req, res) => {
       return res.status(400).json({ error: 'Google email address is required.' });
     }
     const ip = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress;
-    const user = authStore.loginGoogleUser(email, name, ip);
+    const user = await authStore.loginGoogleUser(email, name, ip);
     return res.json({ success: true, user });
   } catch (err: any) {
     return res.status(400).json({ error: err.message || 'Google login failed.' });
@@ -180,13 +180,13 @@ router.post('/auth/google', (req, res) => {
 });
 
 // Track last visit timestamp
-router.post('/auth/visit', (req, res) => {
+router.post('/auth/visit', async (req, res) => {
   try {
     const body = parseBody(req);
     const { email } = body;
     if (email) {
       const ip = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress;
-      authStore.recordVisit(email, ip);
+      await authStore.recordVisit(email, ip);
     }
     return res.json({ success: true });
   } catch {
@@ -233,11 +233,11 @@ const requireAdmin = (req: express.Request, res: express.Response, next: express
   return res.status(401).json({ error: 'Unauthorized: Admin authentication required.' });
 };
 
-// Admin get all registered users with last visit info
-router.get('/admin/users', requireAdmin, (req, res) => {
+// Admin get all registered users with last visit info (directly from Supabase users table)
+router.get('/admin/users', requireAdmin, async (req, res) => {
   try {
-    const users = authStore.getAllUsers();
-    const stats = authStore.getStats();
+    const users = await getSupabaseUsers();
+    const stats = await authStore.getStats();
     return res.json({ success: true, users, stats });
   } catch (err: any) {
     return res.status(500).json({ error: err.message || 'Failed to fetch users.' });
@@ -245,9 +245,9 @@ router.get('/admin/users', requireAdmin, (req, res) => {
 });
 
 // Admin get overview stats
-router.get('/admin/stats', requireAdmin, (req, res) => {
+router.get('/admin/stats', requireAdmin, async (req, res) => {
   try {
-    const stats = authStore.getStats();
+    const stats = await authStore.getStats();
     return res.json({ success: true, stats });
   } catch (err: any) {
     return res.status(500).json({ error: err.message || 'Failed to fetch stats.' });
@@ -255,10 +255,10 @@ router.get('/admin/stats', requireAdmin, (req, res) => {
 });
 
 // Admin delete a user
-router.delete('/admin/users/:id', requireAdmin, (req, res) => {
+router.delete('/admin/users/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const deleted = authStore.deleteUser(id);
+    const deleted = await authStore.deleteUser(id);
     return res.json({ success: deleted });
   } catch (err: any) {
     return res.status(500).json({ error: err.message || 'Failed to delete user.' });

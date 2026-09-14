@@ -9,5 +9,16 @@
     "lastVisitAt": "2026-09-14T13:10:07.801Z",
     "visitCount": 1,
     "lastIp": "127.0.0.1"
+  },
+  {
+    "id": "usr_tw6rc6j2mu1cpbhd",
+    "email": "supabasetest@example.com",
+    "name": "Supabase User",
+    "password": "secretpassword",
+    "provider": "email",
+    "createdAt": "2026-09-14T14:41:23.041Z",
+    "lastVisitAt": "2026-09-14T14:41:23.041Z",
+    "visitCount": 1,
+    "lastIp": "127.0.0.1"
   }
 ]
