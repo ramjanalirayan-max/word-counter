@@ -1,0 +1,6 @@
+{
+  "name": "Accent Voice Generator",
+  "description": "Generate authentic British and Australian speech with global volume control, interactive spelling tests, real-time word highlighting, customizable word-count pause timing, and MP3/WAV export.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
