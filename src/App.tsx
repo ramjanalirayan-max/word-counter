@@ -550,6 +550,12 @@ export default function App() {
           wordCount={tokens.length}
           lastGeneratedAudioUrl={lastGeneratedAudioUrl}
         />
+
+        {/* SECTION 8: Contact Admin & Problem Report Form */}
+        <ContactAdminSection
+          currentUser={currentUser}
+          onToast={(msg) => showToast(msg)}
+        />
       </main>
 
       {/* STICKY FLOATING PLAYER DOCK (Smooth user facility movement anywhere on the page) */}

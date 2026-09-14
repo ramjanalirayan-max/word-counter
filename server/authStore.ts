@@ -13,32 +13,46 @@ export interface UserRecord {
   lastIp?: string;
 }
 
-const DATA_DIR = path.join(process.cwd(), 'data');
-const USERS_FILE = path.join(DATA_DIR, 'users.json');
-
-// Ensure data directory exists
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
+// Ensure data directory works in both standard servers and serverless environments (Vercel/Lambda)
+let DATA_DIR = path.join(process.cwd(), 'data');
+try {
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
+} catch {
+  DATA_DIR = path.join('/tmp', 'data');
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+  } catch (err) {
+    console.warn('Using in-memory user storage (read-only filesystem detected)');
+  }
 }
 
-// Initial sample or empty storage
+const USERS_FILE = path.join(DATA_DIR, 'users.json');
+let inMemoryUsers: UserRecord[] = [];
+
+// Initial sample or storage loader
 function loadUsers(): UserRecord[] {
   try {
     if (fs.existsSync(USERS_FILE)) {
       const raw = fs.readFileSync(USERS_FILE, 'utf-8');
-      return JSON.parse(raw);
+      inMemoryUsers = JSON.parse(raw);
+      return inMemoryUsers;
     }
   } catch (err) {
-    console.error('Failed to read users database, resetting to fallback:', err);
+    console.error('Failed to read users database, using in-memory store:', err);
   }
-  return [];
+  return inMemoryUsers;
 }
 
 function saveUsers(users: UserRecord[]): void {
+  inMemoryUsers = users;
   try {
     fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), 'utf-8');
   } catch (err) {
-    console.error('Failed to write users database:', err);
+    console.warn('Could not persist users to disk (running in ephemeral serverless environment):', err);
   }
 }
 

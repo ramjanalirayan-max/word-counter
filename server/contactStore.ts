@@ -12,31 +12,45 @@ export interface ContactMessage {
   ip?: string;
 }
 
-const DATA_DIR = path.join(process.cwd(), 'data');
-const MESSAGES_FILE = path.join(DATA_DIR, 'messages.json');
-
-// Ensure data directory exists
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
+// Ensure data directory works in both standard servers and serverless environments (Vercel/Lambda)
+let DATA_DIR = path.join(process.cwd(), 'data');
+try {
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
+} catch {
+  DATA_DIR = path.join('/tmp', 'data');
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+  } catch (err) {
+    console.warn('Using in-memory messages storage (read-only filesystem detected)');
+  }
 }
+
+const MESSAGES_FILE = path.join(DATA_DIR, 'messages.json');
+let inMemoryMessages: ContactMessage[] = [];
 
 function loadMessages(): ContactMessage[] {
   try {
     if (fs.existsSync(MESSAGES_FILE)) {
       const raw = fs.readFileSync(MESSAGES_FILE, 'utf-8');
-      return JSON.parse(raw);
+      inMemoryMessages = JSON.parse(raw);
+      return inMemoryMessages;
     }
   } catch (err) {
-    console.error('Failed to read messages database:', err);
+    console.error('Failed to read messages database, using in-memory store:', err);
   }
-  return [];
+  return inMemoryMessages;
 }
 
 function saveMessages(messages: ContactMessage[]): void {
+  inMemoryMessages = messages;
   try {
     fs.writeFileSync(MESSAGES_FILE, JSON.stringify(messages, null, 2), 'utf-8');
   } catch (err) {
-    console.error('Failed to write messages database:', err);
+    console.warn('Could not persist messages to disk (ephemeral serverless environment):', err);
   }
 }
 

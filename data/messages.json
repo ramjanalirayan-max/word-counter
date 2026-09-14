@@ -1,0 +1,11 @@
+[
+  {
+    "id": "msg_1789389045021_e1mvs",
+    "senderEmail": "test@example.com",
+    "subject": "Website Inquiry / Feedback",
+    "message": "Testing Vercel serverless integration",
+    "createdAt": "2026-09-14T12:30:45.021Z",
+    "status": "unread",
+    "ip": "127.0.0.1"
+  }
+]
