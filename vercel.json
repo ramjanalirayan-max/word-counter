@@ -9,14 +9,8 @@
     }
   ],
   "functions": {
-    "api/**/*.js": {
-      "includeFiles": "server/**"
-    },
-    "api/**/*.ts": {
-      "includeFiles": "server/**"
-    },
     "api/index.ts": {
-      "includeFiles": "server/**"
+      "includeFiles": "api/_lib/**"
     }
   }
 }
